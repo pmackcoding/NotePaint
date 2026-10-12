@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>NotePaint</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster+Two:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="top-bar">
+        <h1>Guitar Fretboard</h1>
+
+        <div id="sound-controls">
+            <button id="sound-btn" class="off">🔇 Sound Off</button>
+            <input type="range" id="volume-slider" min="0" max="0.3" step="0.01" value="0.05" aria-label="Volume">
+        </div>
+    </div>
+
+    <div id="fretboard-wrapper">
+        <div id="fretboard-scroll">
+            <div id="fretboard-stage">
+                <div id="inlays"></div>
+                <div id="fretboard"></div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <div id="main-controls">
+
+
+        <div id="scale-controls">
+
+            <div id="circle-of-fifths">
+
+                <div class="key-wheel">
+
+                    <button class="key-segment" data-root="0" style="--i: 0">
+                        <span class="major-key">C</span>
+                        <span class="minor-key">A min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="7" style="--i: 1">
+                        <span class="major-key">G</span>
+                        <span class="minor-key">E min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="2" style="--i: 2">
+                        <span class="major-key">D</span>
+                        <span class="minor-key">B min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="9" style="--i: 3">
+                        <span class="major-key">A</span>
+                        <span class="minor-key">F♯ min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="4" style="--i: 4">
+                        <span class="major-key">E</span>
+                        <span class="minor-key">C♯ min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="11" style="--i: 5">
+                        <span class="major-key">B</span>
+                        <span class="minor-key">G♯ min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="6" style="--i: 6">
+                        <span class="major-key">F♯</span>
+                        <span class="minor-key">D♯ min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="1" style="--i: 7">
+                        <span class="major-key">D♭</span>
+                        <span class="minor-key">B♭ min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="8" style="--i: 8">
+                        <span class="major-key">A♭</span>
+                        <span class="minor-key">F min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="3" style="--i: 9">
+                        <span class="major-key">E♭</span>
+                        <span class="minor-key">C min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="10" style="--i: 10">
+                        <span class="major-key">B♭</span>
+                        <span class="minor-key">G min</span>
+                    </button>
+
+                    <button class="key-segment" data-root="5" style="--i: 11">
+                        <span class="major-key">F</span>
+                        <span class="minor-key">D min</span>
+                    </button>
+
+                    <div class="wheel-center">
+                        <span>Circle</span>
+                        <span>of Fifths</span>
+                    </div>
+                </div>
+            </div>
+            <div id="scale-settings">
+                <div id="scale-selector-container">
+
+                    <button class="scale-option" data-scale="pentatonic">
+                        Pentatonic
+                    </button>
+
+                    <button class="scale-option selected" data-scale="diatonic">
+                        Diatonic
+                    </button>
+                </div>
+
+                <div id="position-controls">
+                    <div id="position-system-row">
+                        <label for="position-system">System</label>
+                        <select id="position-system">
+                            <option value="caged">CAGED</option>
+                            <option value="threeNPS">3NPS</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="position-select">Shape</label>
+                        <select id="position-select">
+                            <option value="full">Full Fretboard</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="fretboard-controls">
+            <div id="palette">
+                <button type="button" class="palette-color red" data-color="red" aria-label="Red"></button>
+                <button type="button" class="palette-color orange" data-color="orange" aria-label="Orange"></button>
+                <button type="button" class="palette-color yellow" data-color="yellow" aria-label="Yellow"></button>
+                <button type="button" class="palette-color green" data-color="green" aria-label="Green"></button>
+                <button type="button" class="palette-color blue" data-color="blue" aria-label="Blue"></button>
+                <button type="button" class="palette-color indigo" data-color="indigo" aria-label="Indigo"></button>
+                <button type="button" class="palette-color violet" data-color="violet" aria-label="Violet"></button>
+            </div>
+
+            <div id="note-controls">
+                <button id="clear">Clear Fretboard</button>
+
+                <button id="note-names-btn" type="button" aria-pressed="false">
+                    Note Names
+                </button>
+                <div id="root-controls">
+                    <button id="show-roots-btn" type="button" aria-pressed="false" aria-expanded="false"
+                        aria-controls="root-choice-row">
+                        Show Roots
+                    </button>
+
+                    <div id="root-choice-row" hidden>
+                        <label for="root-choice">Root</label>
+                        <select id="root-choice"></select>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+        <div id="appearance-panel">
+            <div class="appearance-header">
+                <button id="reset-appearance">Reset</button>
+                <h2 id="theme">Theme</h2>
+
+            </div>
+
+
+            <div class="appearance-row">
+                <label>Background</label>
+
+                <div class="appearance-swatches">
+                    <button class="appearance-swatch" data-target="page"
+                        data-color="linear-gradient(to bottom,  #ece4e2d8, #b55848d8)"
+                        style="background: linear-gradient(to bottom, #ece4e2d8, #b55848d8);" title="Sunrise"></button>
+
+
+                    <button class="appearance-swatch" data-target="page"
+                        data-color="linear-gradient(to bottom, #e1f8e7d8, #75ba8ad8)"
+                        style="background: linear-gradient(to bottom, #e1f8e7d8, #75ba8ad8);"
+                        title="Mint Breeze"></button>
+
+                    <button class="appearance-swatch" data-target="page"
+                        data-color="linear-gradient(to bottom, #ddeaefd8, #4aa3c9d8)"
+                        style="background: linear-gradient(to bottom, #ddeaefd8, #4aa3c9d8);"
+                        title="Lake Spring"></button>
+
+                    <button class="appearance-swatch" data-target="page"
+                        data-color="linear-gradient(to bottom, #EDE7E3, #9d9db2d8)"
+                        style="background: linear-gradient(to bottom, #EDE7E3, #9d9db2d8);" title="Tundra"></button>
+
+                    <button class="appearance-swatch" data-target="page"
+                        data-color="linear-gradient(to bottom,  #54545ed8, #0a0714d8)"
+                        style="background: linear-gradient(to bottom, #54545ed8, #0a0714d8);" title="Charcoal"></button>
+
+                    <input type="color" id="page-color-picker" value="#edd69d" title="Custom">
+                </div>
+            </div>
+
+            <div class="appearance-row">
+                <label>Fretboard</label>
+
+
+                <div class="appearance-swatches">
+                    <button class="appearance-swatch" data-target="board" data-color="#5a3a1a"
+                        style="background: #5a3a1a;" title="Rosewood"></button>
+
+
+                    <button class="appearance-swatch" data-target="board" data-color="#B07243"
+                        style="background: #B07243;" title="Roasted"></button>
+
+
+                    <button class="appearance-swatch" data-target="board" data-color="#000000"
+                        style="background: #000000;" title="Ebony"></button>
+
+                    <button class="appearance-swatch" data-target="board" data-color="#efc36cc6"
+                        style="background: #efc36cc6;" title="Maple"></button>
+
+                    <button class="appearance-swatch" data-target="board" data-color="#eede90c4"
+                        style="background: #eede90c4;" title="Blonde"></button>
+
+
+                    <input type="color" id="board-color-picker" value="#5a3a1a" title="Custom">
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+    </div>
+
+
+
+    <button id="help-btn" type="button" aria-haspopup="dialog" aria-controls="help-tour">
+        ? Help
+    </button>
+
+    <dialog id="help-tour" aria-labelledby="help-title" aria-describedby="help-text">
+
+        <div class="help-shade" id="help-shade-top"></div>
+        <div class="help-shade" id="help-shade-right"></div>
+        <div class="help-shade" id="help-shade-bottom"></div>
+        <div class="help-shade" id="help-shade-left"></div>
+
+        <div id="help-highlight" aria-hidden="true"></div>
+
+        <div id="help-bubble">
+            <div class="help-header">
+                <span id="help-progress" aria-live="polite"></span>
+                <button id="help-close" type="button" aria-label="Close help">×</button>
+            </div>
+
+            <h2 id="help-title"></h2>
+            <p id="help-text"></p>
+
+            <div class="help-navigation">
+                <button id="help-back" type="button">Back</button>
+                <button id="help-next" type="button">Next</button>
+            </div>
+        </div>
+    </dialog>
+
+
+
+    <button id="about-btn" type="button" aria-haspopup="dialog" aria-controls="about-overlay">
+        About
+    </button>
+
+    <div id="about-overlay" hidden>
+
+        <div id="about-panel" role="dialog" aria-modal="true" aria-labelledby="about-title">
+
+            <div class="about-header">
+                <h2 id="about-title">About NotePaint</h2>
+
+                <button id="about-close" type="button" aria-label="Close About">
+                    &times;
+                </button>
+            </div>
+
+            <p>
+                NotePaint is a free interactive guitar fretboard
+                for guitarists, teachers, and students.
+            </p>
+
+            <p>
+                Explore scales, visualise patterns and experiment
+                with musical ideas by painting notes directly
+                onto the fretboard.
+            </p>
+
+            <div class="about-links">
+                <a id="about-feedback"
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSdMpHkmDGX6tjuSubEqb6uPYFECHcqzGxucnWh9RJ3ziY9rFg/viewform?usp=publish-editor"
+                    target="_blank" rel="noopener noreferrer">>
+                    Report a problem
+                </a>
+
+                <a id="about-support" href="#">
+                    Support NotePaint
+                </a>
+            </div>
+
+            <p class="about-copyright">
+                &copy; 2026 NotePaint. All rights reserved.
+                Free to use.
+            </p>
+
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
