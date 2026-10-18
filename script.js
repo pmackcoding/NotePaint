@@ -900,6 +900,8 @@
                 fillScale(selectedRoot, currentScale);
             }
 
+            applyStringFilter();
+            
         });
     });
 
