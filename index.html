@@ -5,6 +5,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>NotePaint</title>
+    <link rel="icon" type="image/png" href="NotePaint.png">
+    <link rel="apple-touch-icon" href="NotePaint.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,13 +17,21 @@
 <body>
 
     <div id="top-bar">
-        <h1>Guitar Fretboard</h1>
+        <h1>NotePaint</h1>
 
         <div id="sound-controls">
+
+            <button id="handedness-btn" type="button" aria-pressed="false">
+                Right-Handed
+            </button>
+
             <button id="sound-btn" class="off">🔇 Sound Off</button>
             <input type="range" id="volume-slider" min="0" max="0.3" step="0.01" value="0.05" aria-label="Volume">
+
         </div>
     </div>
+
+
 
     <div id="fretboard-wrapper">
         <div id="fretboard-scroll">
@@ -127,7 +137,7 @@
                         <label for="position-system">System</label>
                         <select id="position-system">
                             <option value="caged">CAGED</option>
-                            <option value="threeNPS">3NPS</option>
+                            <option value="threeNPS">3 Notes Per String</option>
                         </select>
                     </div>
 
@@ -136,6 +146,21 @@
                         <select id="position-select">
                             <option value="full">Full Fretboard</option>
                         </select>
+                    </div>
+                </div>
+
+                <div id="string-filter">
+                    <span>Strings</span>
+
+                    <div id="string-filter-buttons">
+                        <button type="button" class="string-filter-btn active" data-string="all"
+                            aria-pressed="true">All</button>
+                        <button type="button" class="string-filter-btn" data-string="5" aria-pressed="false">E</button>
+                        <button type="button" class="string-filter-btn" data-string="4" aria-pressed="false">A</button>
+                        <button type="button" class="string-filter-btn" data-string="3" aria-pressed="false">D</button>
+                        <button type="button" class="string-filter-btn" data-string="2" aria-pressed="false">G</button>
+                        <button type="button" class="string-filter-btn" data-string="1" aria-pressed="false">B</button>
+                        <button type="button" class="string-filter-btn" data-string="0" aria-pressed="false">E</button>
                     </div>
                 </div>
             </div>
@@ -153,22 +178,51 @@
             </div>
 
             <div id="note-controls">
-                <button id="clear">Clear Fretboard</button>
 
-                <button id="note-names-btn" type="button" aria-pressed="false">
-                    Note Names
-                </button>
-                <div id="root-controls">
-                    <button id="show-roots-btn" type="button" aria-pressed="false" aria-expanded="false"
-                        aria-controls="root-choice-row">
-                        Show Roots
-                    </button>
+                <div id="painting-controls">
 
-                    <div id="root-choice-row" hidden>
-                        <label for="root-choice">Root</label>
-                        <select id="root-choice"></select>
+                    <div id="history-controls">
+                        <button id="undo" type="button" disabled aria-label="Undo" title="Undo">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                                focusable="false">
+                                <path d="M9 14 4 9l5-5" />
+                                <path d="M4 9h10a6 6 0 0 1 0 12h-2" />
+                            </svg>
+                        </button>
+
+                        <button id="redo" type="button" disabled aria-label="Redo" title="Redo">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                                focusable="false">
+                                <path d="m15 14 5-5-5-5" />
+                                <path d="M20 9H10a6 6 0 0 0 0 12h2" />
+                            </svg>
+                        </button>
                     </div>
+
+                    <div id="main-note-buttons">
+                        <button id="clear">Clear Fretboard</button>
+
+                        <button id="note-names-btn" type="button" aria-pressed="false">
+                            Note Names
+                        </button>
+
+                        <div id="root-controls">
+                            <button id="show-roots-btn" type="button" aria-pressed="false" aria-expanded="false"
+                                aria-controls="root-choice-row">
+                                Show Roots
+                            </button>
+
+                            <div id="root-choice-row" hidden>
+                                <label for="root-choice">Root</label>
+                                <select id="root-choice"></select>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
+
             </div>
 
 
@@ -184,7 +238,7 @@
 
 
             <div class="appearance-row">
-                <label>Background</label>
+                <label for="page-color-picker">Background</label>
 
                 <div class="appearance-swatches">
                     <button class="appearance-swatch" data-target="page"
@@ -215,7 +269,7 @@
             </div>
 
             <div class="appearance-row">
-                <label>Fretboard</label>
+                <label for="board-color-picker">Fretboard</label>
 
 
                 <div class="appearance-swatches">
@@ -316,7 +370,7 @@
                 </a>
 
                 <a id="about-support" href="https://buymeacoffee.com/notepaint" target="_blank"
-                 rel="noopener noreferrer">
+                    rel="noopener noreferrer">
                     Support NotePaint
                 </a>
             </div>

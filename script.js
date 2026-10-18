@@ -26,6 +26,42 @@
     const strings = 6;
     const frets = 25;
 
+    // HANDEDNESS TOGGLE
+
+    const handednessBtn = document.getElementById("handedness-btn");
+    const fretboardStage = document.getElementById("fretboard-stage");
+
+
+    try {
+        if (localStorage.getItem("notepaint-handedness") === "left") {
+            fretboardStage.classList.add("left-handed");
+            handednessBtn.textContent = "Left-Handed";
+            handednessBtn.setAttribute("aria-pressed", "true");
+        }
+    } catch (error) {
+        console.warn("Could not restore handedness:", error);
+    }
+
+    handednessBtn.addEventListener("click", () => {
+        const isLeftHanded = fretboardStage.classList.toggle("left-handed");
+
+        handednessBtn.textContent = isLeftHanded
+            ? "Left-Handed"
+            : "Right-Handed";
+
+        handednessBtn.setAttribute("aria-pressed", String(isLeftHanded));
+
+
+        try {
+            localStorage.setItem(
+                "notepaint-handedness",
+                isLeftHanded ? "left" : "right"
+            );
+        } catch (error) {
+            console.warn("Could not save handedness:", error);
+        }
+    });
+
     const openNoteIndex = [4, 9, 2, 7, 11, 4];
     const NOTE_NAMES = [
         "C", "C♯", "D", "D♯", "E", "F",
@@ -270,6 +306,134 @@
     }
 
 
+    // UNDO / REDO HISTORY
+
+    const undoStack = [];
+    const redoStack = [];
+    const historyLimit = 50;
+
+    function capturePaintedNotes() {
+        return Array.from(fretboard.querySelectorAll(".fret"), cell => {
+            const dot = cell.querySelector(".dot:not(.preset)");
+
+            if (!dot) return null;
+
+            return {
+                className: dot.className,
+                noteName: dot.dataset.noteName,
+                enharmonicOverride: dot.dataset.enharmonicOverride || null
+            };
+        });
+    }
+
+    function saveUndoState() {
+        undoStack.push(capturePaintedNotes());
+
+        if (undoStack.length > historyLimit) {
+            undoStack.shift();
+        }
+
+        redoStack.length = 0;
+        updateHistoryButtons();
+    }
+
+
+    function restorePaintedNotes(snapshot) {
+        const cells = fretboard.querySelectorAll(".fret");
+
+        cells.forEach((cell, index) => {
+            const savedNote = snapshot[index];
+            const existingDot = cell.querySelector(".dot");
+
+
+
+            if (existingDot) {
+                existingDot.remove();
+            }
+
+            if (!savedNote) return;
+
+            const dot = document.createElement("div");
+
+            dot.className = savedNote.className;
+            dot.dataset.noteName = savedNote.noteName;
+
+            if (savedNote.enharmonicOverride) {
+                dot.dataset.enharmonicOverride =
+                    savedNote.enharmonicOverride;
+            }
+
+            cell.appendChild(dot);
+        });
+
+
+        clearPresetNotes();
+
+        if (selectedRoot !== null) {
+            fillScale(selectedRoot, currentScale);
+        }
+
+        applyStringFilter();
+        refreshRootHighlights();
+    }
+
+
+    function undoPainting() {
+        if (undoStack.length === 0) return;
+
+        redoStack.push(capturePaintedNotes());
+
+        const previousState = undoStack.pop();
+        restorePaintedNotes(previousState);
+
+        updateHistoryButtons();
+    }
+
+    function redoPainting() {
+        if (redoStack.length === 0) return;
+
+        undoStack.push(capturePaintedNotes());
+
+        const nextState = redoStack.pop();
+        restorePaintedNotes(nextState);
+
+        updateHistoryButtons();
+    }
+
+    // UNDO / REDO BUTTONS
+
+    const undoButton = document.getElementById("undo");
+    const redoButton = document.getElementById("redo");
+
+    function updateHistoryButtons() {
+        undoButton.disabled = undoStack.length === 0;
+        redoButton.disabled = redoStack.length === 0;
+    }
+
+    undoButton.addEventListener("click", undoPainting);
+    redoButton.addEventListener("click", redoPainting);
+
+    // UNDO / REDO KEYBOARD SHORTCUTS
+
+    document.addEventListener("keydown", (event) => {
+        if (!(event.metaKey || event.ctrlKey)) return;
+        if (event.altKey) return;
+
+        if (event.target.matches("input, textarea, select") ||
+            event.target.isContentEditable) {
+            return;
+        }
+
+        if (event.key.toLowerCase() !== "z") return;
+
+        event.preventDefault();
+
+        if (event.shiftKey) {
+            redoPainting();
+        } else {
+            undoPainting();
+        }
+    });
 
     //ADD DOTS + CLICK LOGIC
 
@@ -416,6 +580,8 @@
 
                 let dot = fretDiv.querySelector(".dot");
                 let noteAdded = false;
+
+                saveUndoState();
 
                 if (dot && dot.classList.contains("position-hidden")) {
                     dot.remove();
@@ -702,6 +868,8 @@
 
             fillScale(selectedRoot, currentScale);
 
+            applyStringFilter();
+
         });
     });
 
@@ -739,6 +907,9 @@
 
     document.getElementById("clear").addEventListener("click", () => {
 
+        if (document.querySelector(".dot:not(.preset)")) {
+            saveUndoState();
+        }
 
         document.querySelectorAll(".dot").forEach(dot => dot.remove());
 
@@ -751,6 +922,10 @@
         });
 
         positionSelect.value = "full";
+
+        visibleStrings.fill(true);
+        updateStringFilterButtons();
+        applyStringFilter();
     });
 
     // APPEARANCE CUSTOMISATION //
@@ -762,6 +937,38 @@
         "linear-gradient(to bottom, #edd69dd8, #d98e62e8)";
 
     const themeStorageKey = "guitar-fretboard-theme";
+
+    function updateLowerLabelColor(background) {
+        const colors = background.match(
+            /#[0-9a-f]{6}(?:[0-9a-f]{2})?|rgba?\([^)]+\)/gi
+        );
+
+        if (!colors) return;
+
+        const color = colors[colors.length - 1];
+
+        let r, g, b;
+
+        if (color.startsWith("#")) {
+            r = parseInt(color.slice(1, 3), 16);
+            g = parseInt(color.slice(3, 5), 16);
+            b = parseInt(color.slice(5, 7), 16);
+        } else {
+            const values = color.match(/[\d.]+/g);
+
+            r = Number(values[0]);
+            g = Number(values[1]);
+            b = Number(values[2]);
+        }
+
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+        const textColor = brightness < 80
+            ? "#edd69d"
+            : "#4b2e1e";
+
+        document.body.style.setProperty("--lower-label-color", textColor);
+    }
 
 
     const pageColorPicker = document.getElementById("page-color-picker");
@@ -798,6 +1005,7 @@
             if (typeof theme.pageBackground === "string" &&
                 CSS.supports("background", theme.pageBackground)) {
                 document.body.style.background = theme.pageBackground;
+                updateLowerLabelColor(theme.pageBackground);
             }
 
             if (typeof theme.boardBackground === "string" &&
@@ -817,10 +1025,10 @@
         }
     }
 
-
     function changePageColor(color) {
         document.body.style.background = color;
         pageColorPicker.value = originalPageColor;
+        updateLowerLabelColor(color);
     }
 
     function changeCustomPageColor(color) {
@@ -837,9 +1045,9 @@
         }
 
         const lighter = "#" +
-            toHex(shade(r, 0.95)) +
-            toHex(shade(g, 0.95)) +
-            toHex(shade(b, 0.95));
+            toHex(shade(r, 0.65)) +
+            toHex(shade(g, 0.65)) +
+            toHex(shade(b, 0.65));
 
         const darker = "#" +
             toHex(Math.round(r * 0.8)) +
@@ -848,6 +1056,8 @@
 
         document.body.style.background =
             `linear-gradient(to bottom, ${lighter}, ${darker})`;
+
+        updateLowerLabelColor(darker);
     }
 
 
@@ -890,6 +1100,8 @@
         document.body.style.background = originalPageBackground;
         boardElement.style.background = originalBoardColor;
 
+        updateLowerLabelColor(originalPageBackground);
+
         pageColorPicker.value = originalPageColor;
         boardColorPicker.value = originalBoardColor;
 
@@ -902,6 +1114,13 @@
 
 
     restoreTheme();
+
+    console.log(
+        "Restored background:",
+        document.body.style.background,
+        "Label colour:",
+        document.body.style.getPropertyValue("--lower-label-color")
+    );
 
     function updateVolumeFill() {
         const min = Number(volumeSlider.min);
@@ -1162,6 +1381,58 @@
 
     updatePositionOptions();
 
+    // STRING FILTER
+
+    const stringFilterButtons =
+        document.querySelectorAll(".string-filter-btn");
+
+    const visibleStrings = [true, true, true, true, true, true];
+
+    function applyStringFilter() {
+        fretboard.querySelectorAll(".string").forEach((row, index) => {
+            row.querySelectorAll(".dot").forEach(dot => {
+                dot.classList.toggle("string-hidden", !visibleStrings[index]);
+            });
+        });
+    }
+
+    function updateStringFilterButtons() {
+        const allSelected = visibleStrings.every(Boolean);
+
+        stringFilterButtons.forEach(button => {
+            const stringIndex = button.dataset.string;
+
+            const active = stringIndex === "all"
+                ? allSelected
+                : !allSelected && visibleStrings[Number(stringIndex)];
+
+            button.classList.toggle("active", active);
+            button.setAttribute("aria-pressed", String(active));
+        });
+    }
+
+    stringFilterButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const stringIndex = button.dataset.string;
+
+            if (stringIndex === "all") {
+                visibleStrings.fill(true);
+            } else {
+                const index = Number(stringIndex);
+                const allSelected = visibleStrings.every(Boolean);
+
+                if (allSelected) {
+                    visibleStrings.fill(false);
+                    visibleStrings[index] = true;
+                } else {
+                    visibleStrings[index] = !visibleStrings[index];
+                }
+            }
+
+            updateStringFilterButtons();
+            applyStringFilter();
+        });
+    });
 
     // HELP TOUR
 
@@ -1187,6 +1458,11 @@
             text: "Choose Full Fretboard or an individual shape.\n\nDiatonic scales offer CAGED and three-notes-per-string systems. Pentatonic scales use the five standard shapes. Manually painted notes remain visible - even when key is toggled on/off"
         },
         {
+            target: "#string-filter",
+            title: "Choose your strings",
+            text: "Show notes on individual strings or any combination of strings.\n\nSelect All to display every string again. Your painted notes are preserved when strings are hidden."
+        },
+        {
             target: "#palette",
             title: "Choose a colour",
             text: "Choose the colour for your next painted note. Use different colours to mark roots, chords, arpeggios or anything else you want to explain.\n\nOn a keyboard, the left and right arrows change colour."
@@ -1207,6 +1483,16 @@
             target: "#clear",
             title: "Start fresh",
             text: "Clear Fretboard removes all painted and automatic notes, deselects the key and returns the Shape menu to Full Fretboard."
+        },
+        {
+            target: "#history-controls",
+            title: "Undo and Redo",
+            text: "Use these arrows to undo or redo changes to your manually painted notes.\n\nYou can even clear the fretboard and bring your entire painting back with Undo!"
+        },
+        {
+            target: "#handedness-btn",
+            title: "Switch handedness",
+            text: "Switch instantly between right-handed and left-handed fretboard views without changing your notes, scales or shapes.\n\nYour preference is remembered for next time."
         },
         {
             target: "#sound-controls",
@@ -1267,7 +1553,23 @@
 
         if (!target) return;
 
-        const rect = target.getBoundingClientRect();
+        let rect = target.getBoundingClientRect();
+
+        if (helpSteps[helpStepIndex].target === "#sound-controls") {
+            const soundRect =
+                document.getElementById("sound-btn").getBoundingClientRect();
+
+            const volumeRect =
+                document.getElementById("volume-slider").getBoundingClientRect();
+
+            rect = {
+                left: Math.min(soundRect.left, volumeRect.left),
+                top: Math.min(soundRect.top, volumeRect.top),
+                right: Math.max(soundRect.right, volumeRect.right),
+                bottom: Math.max(soundRect.bottom, volumeRect.bottom)
+            };
+        }
+
         const width = helpTour.clientWidth;
         const height = helpTour.clientHeight;
         const margin = 16;
@@ -1661,3 +1963,4 @@
     });
 
 })();
+

@@ -11,7 +11,7 @@ body {
     font-family: sans-serif;
     margin: 0;
     min-height: 100vh;
-    padding: 1.5rem clamp(0.5rem, 1vw, 1.5rem) 3rem;
+    padding: 0.5rem clamp(0.5rem, 1vw, 1.5rem) 3rem;
     padding-left: max(clamp(0.5rem, 1vw, 1.5rem), env(safe-area-inset-left));
     padding-right: max(clamp(0.5rem, 1vw, 1.5rem), env(safe-area-inset-right));
     padding-bottom: max(3rem, env(safe-area-inset-bottom));
@@ -74,7 +74,7 @@ h1 {
     flex-shrink: 0;
     gap: 1rem;
     min-width: 0;
-    padding-top: 1.75rem;
+    padding-top: 0.70rem;
 }
 
 #scale-controls {
@@ -266,6 +266,7 @@ h1 {
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .fret:not(:first-child) {
@@ -378,7 +379,7 @@ h1 {
     border: 2px solid #f2e9e9;
 
     border-radius: 19px;
-    background: #5a3a1a;
+    background: transparent;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -503,6 +504,55 @@ button:hover {
 /* NOTE NAME CONTROLS */
 
 #note-controls {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+#history-controls {
+    display: flex;
+    justify-content: center;
+    gap: 0.15rem;
+    width: 100%;
+    position: relative;
+    top: -0.3rem;
+}
+
+#history-controls button {
+    flex: 0 0 4rem;
+    min-width: 0;
+    min-height: 1.75rem;
+    padding: 0.1rem 0.5rem;
+    font-size: 1.15rem;
+    line-height: 0.5rem;
+    border: 2px solid #d9a262;
+    border-radius: 9px;
+    background: #edd69d;
+    color: #4b2e1e;
+    box-shadow: 0 3px 6px #00000033;
+
+}
+
+#history-controls button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+#history-controls button:not(:disabled):hover {
+    background: #ffe0a0;
+    box-shadow: 0 0 12px #ffffff99;
+}
+
+#painting-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+#main-note-buttons {
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -686,6 +736,37 @@ button:hover {
 }
 
 
+/* HANDEDNESS BUTTON */
+
+#handedness-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 7rem;
+    min-height: 2.5rem;
+    padding: 0.5625rem 0.75rem;
+    border: 1px solid #4b2e1e25;
+    border-radius: 12px;
+
+    background: #f3e5c7;
+    color: #4b2e1e;
+
+    font-family: 'Lobster Two', serif;
+    font-size: 0.75rem;
+    font-weight: bold;
+
+    box-shadow: 0 2px 5px #00000014;
+}
+
+#handedness-btn:hover {
+    filter: brightness(1.05);
+}
+
+#handedness-btn[aria-pressed="true"] {
+    background: #d6e7c9;
+    box-shadow: 0 0 8px #6fa77040;
+}
+
 
 
 /*ANIMATIONS*/
@@ -727,6 +808,7 @@ button:hover {
     width: 100%;
     height: 100%;
     position: relative;
+
     border-radius: 50%;
     background: #596275;
     box-shadow: 0 6px 12px #00000033;
@@ -763,7 +845,7 @@ button:hover {
     background: #edd69d;
     color: #4b2e1e;
     cursor: pointer;
-
+    -webkit-tap-highlight-color: transparent;
     -webkit-clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
     clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
 
@@ -779,9 +861,17 @@ button:hover {
 }
 
 .key-segment:hover {
-    background: #ffe0a0;
-    box-shadow: 0 0 12px #ffffff99;
-    z-index: 2;
+    background: #edd69d;
+    box-shadow: none;
+    z-index: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .key-segment:hover {
+        background: #ffe0a0;
+        box-shadow: 0 0 12px #ffffff99;
+        z-index: 2;
+    }
 }
 
 .key-segment.selected {
@@ -811,6 +901,8 @@ button:hover {
 
 .wheel-center {
     position: absolute;
+    z-index: 4;
+
     left: 50%;
     top: 50%;
     width: 38.333333%;
@@ -937,10 +1029,86 @@ button:hover {
     display: none;
 }
 
-.dot.position-hidden {
+.dot.position-hidden,
+.dot.string-hidden {
     display: none;
 }
 
+/* STRING FILTER */
+
+#string-filter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+}
+
+#string-filter>span {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #4b2e1e;
+}
+
+#string-filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.35rem;
+    width: 100%;
+}
+
+.string-filter-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+
+    border: 2px solid #d9a262;
+    border-radius: 10px;
+
+    background: #edd69d;
+    color: #4b2e1e;
+
+    font-size: 0.75rem;
+    font-weight: bold;
+
+    box-shadow: 0 3px 6px #00000033;
+}
+
+.string-filter-btn:hover {
+    background: #ffe0a0;
+}
+
+.string-filter-btn.active {
+    background: #ffd685;
+    border-color: #cb5a46;
+    box-shadow: 0 0 0 2px #a35050cc;
+}
+
+.string-filter-btn:focus-visible {
+    outline: 2px solid #4b2e1e;
+    outline-offset: 3px;
+}
+
+/* Legacy Safari spacing */
+
+.no-flex-gap #string-filter>*+* {
+    margin-top: 0.4rem;
+}
+
+.no-flex-gap #string-filter-buttons>*+* {
+    margin-left: 0.45rem;
+}
+
+
+.no-flex-gap #main-note-buttons>*+* {
+    margin-left: 0.75rem;
+}
+
+/* Legacy Safari — sound icon and text spacing */
+.no-flex-gap #sound-btn svg {
+    margin-right: 7px;
+}
 
 #top-bar,
 #main-controls {
@@ -959,7 +1127,8 @@ button:hover {
 
     #scale-controls {
         padding-left: 0;
-        gap: 1rem;
+        gap: 1.5rem;
+        grid-column-gap: 1.5rem;
         justify-self: center;
     }
 
@@ -1079,8 +1248,8 @@ button:hover {
 
 #help-btn {
     position: fixed;
-    right: max(1rem, env(safe-area-inset-right));
-    bottom: max(1rem, env(safe-area-inset-bottom));
+    right: 1rem;
+    bottom: 1rem;
     z-index: 10;
 
     padding: 0.6rem 0.9rem;
@@ -1558,4 +1727,159 @@ button:hover {
     #about-panel {
         padding: 1.1rem;
     }
+}
+
+/* PRINT LAYOUT */
+
+@media print {
+
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+
+    body {
+        background: white !important;
+        padding: 0;
+        margin: 0;
+        min-height: 0;
+    }
+
+    #top-bar,
+    #main-controls,
+    #help-btn,
+    #about-btn,
+    #help-tour,
+    #about-overlay {
+        display: none !important;
+    }
+
+    #fretboard-wrapper {
+        width: 100%;
+        max-width: none;
+        margin: 80mm auto 0;
+        padding: 0;
+        background: white;
+        box-shadow: none;
+    }
+
+    #fretboard-scroll {
+        width: 100%;
+        overflow: visible;
+        display: block;
+        zoom: 1;
+    }
+
+    #fretboard-stage {
+        width: 1277.37px;
+        margin: 0;
+        zoom: 1.05;
+        transform: none;
+    }
+
+    #fretboard {
+        background: white;
+    }
+
+    .string::before {
+        background: #333 !important;
+        height: 1px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .dot {
+        background: white !important;
+        border: 2px solid black !important;
+        box-shadow: none !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .dot.root {
+        border: 4px double black !important;
+    }
+}
+
+/* ADAPTIVE LOWER LABELS */
+
+#position-controls label,
+#string-filter>span,
+.appearance-row label {
+    color: var(--lower-label-color, #4b2e1e);
+}
+
+/* LEFT-HANDED FRETBOARD */
+
+#fretboard-stage.left-handed {
+    transform: scaleX(-1);
+}
+
+#fretboard-stage.left-handed .dot::after {
+    transform: scaleX(-1);
+}
+
+/* MOBILE PORTRAIT — CONTROL ORDER */
+
+@media (max-width: 37.5rem) and (orientation: portrait) {
+
+    #main-controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #scale-controls,
+    #fretboard-controls,
+    #scale-settings,
+    #note-controls,
+    #painting-controls {
+        display: contents;
+    }
+
+    #palette {
+        order: 1;
+    }
+
+    #history-controls {
+        order: 2;
+    }
+
+    #main-note-buttons {
+        order: 3;
+    }
+
+    #circle-of-fifths {
+        order: 4;
+    }
+
+    #scale-selector-container {
+        order: 5;
+    }
+
+    #position-controls {
+        order: 6;
+    }
+
+    #string-filter {
+        order: 7;
+    }
+
+    #appearance-panel {
+        order: 8;
+    }
+}
+
+/* TABLET PORTRAIT — CONTROL SPACING */
+
+@media (min-width: 37.5625rem) and (max-width: 56.25rem) {
+
+    #scale-controls {
+        margin-bottom: 1.5rem;
+    }
+
+    #fretboard-controls {
+        margin-bottom: 1.5rem;
+    }
+
 }
